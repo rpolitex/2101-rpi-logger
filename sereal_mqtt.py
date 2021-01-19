@@ -9,6 +9,7 @@ time_fixed=int(time.time())
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
+
 def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
 def timer_fileCloseOpen():
