@@ -2,8 +2,8 @@ import paho.mqtt.client as mqtt
 import serial, time, ssl, os
 
 
-topic1 = "dm/test1"
-topic2 = "dm/test2"
+topic1 = "dm/log1"
+topic2 = "dm/error1"
 message_data= "g___d"
 
 def on_connect(client, userdata, flags, rc):
@@ -16,7 +16,8 @@ def timer_fileCloseOpen():
     time_period=time_mark - time_fixed
     if time_period > 86400:  #24hours-> 86400  1hour-> 3600
         file1.close()
-        file1 = open(r'/home/pi/pp_ppd/log_txt_serial/Log'+time.strftime("%Y-%m-%d")+'/k'+time.strftime("%m.%d-%H.%M.%S")+'.txt', 'w')
+        file1 = open(r'/home/pi/pp_ppd/log_txt_serial/Log'+time.strftime("%Y-%m-%d")+
+                     '/k'+time.strftime("%m.%d-%H.%M.%S")+'.txt', 'w')
         time_fixed = time_mark
        
 client = mqtt.Client()
@@ -33,12 +34,14 @@ while 1:
     try:
         ser=serial.Serial("/dev/ttyUSB0", baudrate = 921600, timeout=2)
         print ("ok")
+        client.publish(topic2, "serial port ok")
         try:
             os.mkdir("/home/pi/pp_ppd/log_txt_serial/Log"+time.strftime("%Y-%m-%d"))
         except FileExistsError:
             print ("dir exist")    
-        finally:
-            file1 = open(r'/home/pi/pp_ppd/log_txt_serial/Log'+time.strftime("%Y-%m-%d")+'/k'+time.strftime("%m.%d-%H.%M.%S")+'.txt', 'w')
+        finally:    
+            file1 = open(r'/home/pi/pp_ppd/log_txt_serial/Log'+time.strftime("%Y-%m-%d")+
+                         '/k'+time.strftime("%m.%d-%H.%M.%S")+'.txt', 'w')
             #client.loop_forever()
             client.loop_start()
             time_fixed=int(time.time())
@@ -58,16 +61,16 @@ while 1:
                         count1 += 1
                 except (serial.serialutil.SerialException):
                     print (count1,"except error serial off ")
+                    client.publish(topic2, "except error serial off ")
                     break
                 except (UnicodeDecodeError):
                     print ("error UnicodeDecodeError")
-
-                if  count1 == 300000:        
-                 break
-           
+                    client.publish(topic2, "error UnicodeDecodeError")  
+                           
             file1.close()
             client.loop_stop()
             ser.close()
     
     except serial.serialutil.SerialException:
         print ("error serial port")
+        client.publish(topic2, "error serial port")  
